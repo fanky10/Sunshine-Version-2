@@ -215,8 +215,10 @@ public class TestProvider extends AndroidTestCase {
     public void testBasicLocationQueries() {
         // insert our test records into the database
         WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
+        long locationRowId = TestUtilities.insertNorthPoleLocationValues(mContext);
 
         // Test the basic content provider query
         Cursor locationCursor = mContext.getContentResolver().query(
