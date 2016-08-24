@@ -16,6 +16,12 @@
 
 package com.example.android.sunshine.app;
 
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -71,11 +77,12 @@ public class DetailActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class DetailFragment extends Fragment {
+    public static class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
         private static final String LOG_TAG = DetailFragment.class.getSimpleName();
 
         private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
+        private static final int FORECAST_DETAIL_LOADER_ID = 1;
         private String mForecastStr;
 
         public DetailFragment() {
@@ -90,13 +97,22 @@ public class DetailActivity extends ActionBarActivity {
 
             // The detail Activity called via intent.  Inspect the intent for forecast data.
             Intent intent = getActivity().getIntent();
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                mForecastStr = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (intent != null) {
+                mForecastStr = intent.getDataString();
+            }
+
+            if (null != mForecastStr) {
                 ((TextView) rootView.findViewById(R.id.detail_text))
                         .setText(mForecastStr);
             }
 
             return rootView;
+        }
+
+        @Override
+        public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+            getLoaderManager().initLoader(FORECAST_DETAIL_LOADER_ID, savedInstanceState, this);
+            super.onActivityCreated(savedInstanceState);
         }
 
         @Override
@@ -127,6 +143,22 @@ public class DetailActivity extends ActionBarActivity {
             shareIntent.putExtra(Intent.EXTRA_TEXT,
                     mForecastStr + FORECAST_SHARE_HASHTAG);
             return shareIntent;
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Uri detailsUri = Uri.parse(mForecastStr);
+            return new CursorLoader(getActivity(), detailsUri, null, null, null, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            Log.d("fanky10","data: "+data);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Log.d("fanky10","loader reset");
         }
     }
 }
